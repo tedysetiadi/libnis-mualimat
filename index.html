@@ -1,0 +1,573 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 13 13:41:01 2026
+
+@author: tedysetiadi
+"""
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>LibNis Mu'allimat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --primary: #0f6b3f;
+            --primary-dark: #0b4f2f;
+            --secondary: #f4b400;
+            --bg: #f3f6f9;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --success-bg: #e8f5e9;
+            --success-text: #1b5e20;
+            --danger-bg: #fdecea;
+            --danger-text: #b3261e;
+            --shadow: 0 6px 18px rgba(0,0,0,0.08);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 24px 18px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .brand img {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            background: white;
+            border-radius: 12px;
+            padding: 6px;
+        }
+
+        .brand h2 {
+            margin: 0;
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        .brand p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .sidebar-section {
+            margin-top: 22px;
+        }
+
+        .sidebar-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.08);
+            font-size: 14px;
+        }
+
+        .main {
+            flex: 1;
+            padding: 28px;
+        }
+
+        .topbar {
+            background: white;
+            border-radius: var(--radius);
+            padding: 22px 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--primary-dark);
+        }
+
+        .topbar p {
+            margin: 6px 0 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #eef7f1;
+            color: var(--primary-dark);
+            border: 1px solid #d9ebdf;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .alert-success, .alert-danger {
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid #cce7cf;
+        }
+
+        .alert-danger {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+            border: 1px solid #f3c6c1;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .card h2, .card h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15,107,63,0.25);
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(180deg, #ffffff, #f9fbfc);
+            border: 1px solid #edf0f2;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .download-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .download-link {
+            display: inline-block;
+            text-decoration: none;
+            background: #198754;
+            color: white;
+            padding: 11px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .download-link:hover {
+            opacity: 0.92;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .graph-box img {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: white;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+        }
+
+        th, td {
+            border-bottom: 1px solid #eef0f2;
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f7f9fb;
+            font-weight: 700;
+            color: #374151;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover td {
+            background: #fbfcfd;
+        }
+
+        .community {
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: #fff9e8;
+            border: 1px solid #f2df9a;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main {
+                padding: 16px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Mu'allimat">
+            <div>
+                <h2>LibNis</h2>
+                <p>Mu'allimat Yogyakarta</p>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h4>Fungsi Sistem</h4>
+            <ul>
+                <li>Analisis pola peminjaman</li>
+                <li>Graf buku dan anggota</li>
+                <li>Community detection</li>
+                <li>Rekap kelompok aktif</li>
+                <li>Ekspor hasil analisis</li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <h4>Nilai Guna</h4>
+            <ul>
+                <li>Prioritas pengadaan buku</li>
+                <li>Pemetaan minat baca</li>
+                <li>Dukungan keputusan pustakawan</li>
+                <li>Dokumentasi TTG berbasis web</li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main">
+        <section class="topbar">
+            <div>
+                <h1>Dashboard Analisis Jejaring Perpustakaan</h1>
+                <p>Madrasah Mu'allimat Muhammadiyah Yogyakarta</p>
+            </div>
+            <div class="badge">Teknologi Tepat Guna • Web Dashboard</div>
+        </section>
+
+        {% if success %}
+        <div class="alert-success">{{ success }}</div>
+        {% endif %}
+
+        {% if error %}
+        <div class="alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <section class="card">
+            <h2>Upload Data dan Filter Analisis</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="filter-grid">
+                    <div class="field">
+                        <label>File Excel Peminjaman</label>
+                        <input type="file" name="file" accept=".xls,.xlsx" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Tanggal mulai</label>
+                        <input type="date" name="start_date">
+                    </div>
+
+                    <div class="field">
+                        <label>Tanggal akhir</label>
+                        <input type="date" name="end_date">
+                    </div>
+
+                    <div class="field">
+                        <label>Kelompok anggota</label>
+                        <select name="kelompok">
+                            <option value="Semua">Semua</option>
+                            <option value="MA">MA</option>
+                            <option value="MTs">MTs</option>
+                            <option value="ID Numerik">ID Numerik</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Status peminjaman</label>
+                        <select name="status">
+                            <option value="Semua">Semua</option>
+                            <option value="Dipinjam">Dipinjam</option>
+                            <option value="Kembali">Kembali</option>
+                            <option value="Tidak diketahui">Tidak diketahui</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top:18px;">
+                    <button class="btn" type="submit">Proses Analisis</button>
+                </div>
+            </form>
+        </section>
+
+        {% if summary %}
+        <section class="card">
+            <h2>Ringkasan Statistik</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total transaksi</div>
+                    <div class="kpi-value">{{ summary.total_transaksi }}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total judul unik</div>
+                    <div class="kpi-value">{{ summary.total_judul }}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total anggota unik</div>
+                    <div class="kpi-value">{{ summary.total_anggota }}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Unduh Hasil Analisis</h2>
+            <div class="download-group">
+                <a class="download-link" href="{{ url_for('download_file', filename=excel_file) }}">Download Excel</a>
+                <a class="download-link" href="{{ url_for('download_file', filename=gexf_books) }}">Download GEXF Buku</a>
+                <a class="download-link" href="{{ url_for('download_file', filename=gexf_members) }}">Download GEXF Anggota</a>
+            </div>
+            <div class="footer-note">
+                File GEXF dapat dibuka di Gephi untuk visualisasi lanjutan.
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Visualisasi Graf</h2>
+            <div class="two-col">
+                <div class="graph-box">
+                    <h3>Graf Buku</h3>
+                    <img src="{{ url_for('static', filename='graphs/' + book_graph) }}" alt="Graf Buku">
+                </div>
+                <div class="graph-box">
+                    <h3>Graf Anggota</h3>
+                    <img src="{{ url_for('static', filename='graphs/' + member_graph) }}" alt="Graf Anggota">
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Top Buku Prioritas</h2>
+            <div class="table-wrap">
+                {{ book_table|safe }}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Top Anggota Penghubung Minat</h2>
+            <div class="table-wrap">
+                {{ member_table|safe }}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Kelompok Anggota Aktif</h2>
+            <div class="table-wrap">
+                {{ kelompok_table|safe }}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Tren Bulanan Peminjaman</h2>
+            <div class="table-wrap">
+                {{ monthly_table|safe }}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Top Judul yang Paling Sering Dipinjam</h2>
+            <div class="table-wrap">
+                {{ top_titles_table|safe }}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Top Anggota Paling Aktif</h2>
+            <div class="table-wrap">
+                {{ top_members_table|safe }}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Community Detection Graf Buku</h2>
+            {% if communities %}
+                {% for c in communities %}
+                <div class="community">
+                    <strong>Community {{ c.Community }}</strong><br>
+                    Jumlah node: {{ c.JumlahNode }}<br>
+                    Contoh anggota: {{ c.ContohAnggota }}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Belum ada komunitas yang terbentuk.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+    </main>
+</div>
+</body>
+</html>
