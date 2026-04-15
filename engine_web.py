@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import os
 from itertools import combinations
 
@@ -96,7 +95,7 @@ def load_data(file_path_or_buffer):
     df["KelompokAnggota"] = df["MemberID"].apply(infer_kelompok_anggota)
     df["BorrowMonth"] = df["BorrowDate"].dt.to_period("M").astype(str)
 
-    # pakai judul untuk graf agar pola minat baca muncul
+    # untuk analisis pola bacaan gunakan Judul, bukan Kode Eksemplar
     df["book_node"] = "B_" + df["Title"].str.lower().str.strip()
     df["member_node"] = "M_" + df["MemberID"].astype(str)
 
@@ -150,7 +149,15 @@ def build_member_graph(df):
 
 def compute_metrics(G):
     if G.number_of_nodes() == 0:
-        return pd.DataFrame(columns=["Node", "Label", "Degree", "WeightedDegree", "Betweenness", "Closeness", "CBCI"])
+        return pd.DataFrame(columns=[
+            "KodeNode",
+            "Nama",
+            "Jumlah Keterhubungan",
+            "Intensitas Keterhubungan",
+            "Peran Penghubung",
+            "Kedekatan Akses",
+            "Skor Prioritas Koleksi"
+        ])
 
     degree = dict(G.degree())
     weighted_degree = dict(G.degree(weight="weight"))
@@ -166,19 +173,22 @@ def compute_metrics(G):
         wdeg = weighted_degree.get(node, 0)
         bet = betweenness.get(node, 0.0)
         clo = closeness.get(node, 0.0)
-        cbci = (deg / max_deg if max_deg else 0) + (bet / max_bet if max_bet else 0)
+        skor = (deg / max_deg if max_deg else 0) + (bet / max_bet if max_bet else 0)
 
         rows.append({
-            "Node": node,
-            "Label": G.nodes[node].get("label", node),
-            "Degree": int(deg),
-            "WeightedDegree": float(wdeg),
-            "Betweenness": float(bet),
-            "Closeness": float(clo),
-            "CBCI": float(cbci),
+            "KodeNode": node,
+            "Nama": G.nodes[node].get("label", node),
+            "Jumlah Keterhubungan": int(deg),
+            "Intensitas Keterhubungan": float(wdeg),
+            "Peran Penghubung": float(bet),
+            "Kedekatan Akses": float(clo),
+            "Skor Prioritas Koleksi": float(skor),
         })
 
-    return pd.DataFrame(rows).sort_values(["CBCI", "WeightedDegree"], ascending=False)
+    return pd.DataFrame(rows).sort_values(
+        ["Skor Prioritas Koleksi", "Intensitas Keterhubungan"],
+        ascending=False
+    )
 
 
 def detect_isolated(G):
@@ -202,42 +212,54 @@ def detect_communities(G):
 
 
 def kelompok_stats(df):
-    return (
+    out = (
         df.groupby("KelompokAnggota")
         .size()
-        .reset_index(name="JumlahTransaksi")
-        .sort_values("JumlahTransaksi", ascending=False)
+        .reset_index(name="Jumlah Transaksi Sirkulasi")
+        .sort_values("Jumlah Transaksi Sirkulasi", ascending=False)
     )
+    out.rename(columns={"KelompokAnggota": "Kelompok Pengguna"}, inplace=True)
+    return out
 
 
 def monthly_stats(df):
-    return (
+    out = (
         df.dropna(subset=["BorrowDate"])
         .groupby("BorrowMonth")
         .size()
-        .reset_index(name="JumlahPeminjaman")
+        .reset_index(name="Jumlah Transaksi Sirkulasi")
         .sort_values("BorrowMonth")
     )
+    out.rename(columns={"BorrowMonth": "Periode"}, inplace=True)
+    return out
 
 
 def top_titles(df, n=10):
-    return (
+    out = (
         df.groupby("Title")
         .size()
-        .reset_index(name="JumlahPeminjaman")
-        .sort_values("JumlahPeminjaman", ascending=False)
+        .reset_index(name="Frekuensi Peminjaman")
+        .sort_values("Frekuensi Peminjaman", ascending=False)
         .head(n)
     )
+    out.rename(columns={"Title": "Judul Koleksi"}, inplace=True)
+    return out
 
 
 def top_members(df, n=10):
-    return (
+    out = (
         df.groupby(["MemberID", "MemberName", "KelompokAnggota"])
         .size()
-        .reset_index(name="JumlahPeminjaman")
-        .sort_values("JumlahPeminjaman", ascending=False)
+        .reset_index(name="Frekuensi Peminjaman")
+        .sort_values("Frekuensi Peminjaman", ascending=False)
         .head(n)
     )
+    out.rename(columns={
+        "MemberID": "ID Anggota",
+        "MemberName": "Nama Anggota",
+        "KelompokAnggota": "Kelompok Pengguna"
+    }, inplace=True)
+    return out
 
 
 def circulation_summary(df):
@@ -246,6 +268,39 @@ def circulation_summary(df):
         "total_judul": int(df["Title"].nunique()),
         "total_anggota": int(df["MemberID"].nunique()),
     }
+
+
+def generate_library_insights(df, book_metrics, member_metrics):
+    insights = []
+
+    if not book_metrics.empty:
+        top_book = book_metrics.iloc[0]["Nama"]
+        insights.append(
+            f"Koleksi '{top_book}' memiliki skor prioritas tertinggi dan dapat dipertimbangkan sebagai koleksi acuan untuk pengembangan atau penambahan eksemplar."
+        )
+
+    if not member_metrics.empty:
+        top_member = member_metrics.iloc[0]["Nama"]
+        insights.append(
+            f"Anggota '{top_member}' menunjukkan ragam bacaan yang relatif tinggi, sehingga dapat mencerminkan pola pemanfaatan koleksi yang lebih luas."
+        )
+
+    ks = kelompok_stats(df)
+    if not ks.empty:
+        top_group = ks.iloc[0]["Kelompok Pengguna"]
+        total = int(ks.iloc[0]["Jumlah Transaksi Sirkulasi"])
+        insights.append(
+            f"Kelompok pengguna paling aktif adalah '{top_group}' dengan {total} transaksi sirkulasi. Informasi ini dapat digunakan untuk merancang promosi layanan dan pengembangan koleksi yang lebih tepat sasaran."
+        )
+
+    mt = monthly_stats(df)
+    if not mt.empty:
+        peak = mt.sort_values("Jumlah Transaksi Sirkulasi", ascending=False).iloc[0]
+        insights.append(
+            f"Puncak layanan sirkulasi terjadi pada periode {peak['Periode']} dengan {int(peak['Jumlah Transaksi Sirkulasi'])} transaksi."
+        )
+
+    return insights
 
 
 def export_excel(output_path, sheets):
