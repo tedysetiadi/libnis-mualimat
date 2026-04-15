@@ -27,7 +27,7 @@ os.makedirs(GRAPH_FOLDER, exist_ok=True)
 def draw_graph_to_file(G, filepath, title, max_nodes=70, max_labels=30):
     if G.number_of_nodes() == 0:
         fig = plt.figure(figsize=(8, 6))
-        plt.text(0.5, 0.5, "Graf kosong", ha="center", va="center", fontsize=16)
+        plt.text(0.5, 0.5, "Data visualisasi belum tersedia", ha="center", va="center", fontsize=16)
         plt.title(title)
         plt.axis("off")
         plt.savefig(filepath, bbox_inches="tight")
@@ -53,7 +53,7 @@ def draw_graph_to_file(G, filepath, title, max_nodes=70, max_labels=30):
         labels = {n: G_plot.nodes[n].get("label", n) for n in G_plot.nodes()}
         nx.draw_networkx_labels(G_plot, pos, labels=labels, font_size=7)
 
-    plt.title(f"{title}\nNode={G_plot.number_of_nodes()} | Edge={G_plot.number_of_edges()}")
+    plt.title(f"{title}\nJumlah unsur={G_plot.number_of_nodes()} | Jumlah hubungan={G_plot.number_of_edges()}")
     plt.axis("off")
     plt.savefig(filepath, bbox_inches="tight")
     plt.close(fig)
@@ -64,7 +64,7 @@ def index():
     if request.method == "POST":
         file = request.files.get("file")
         if not file or file.filename == "":
-            return render_template("index.html", error="Silakan upload file Excel terlebih dahulu.")
+            return render_template("index.html", error="Silakan unggah file Excel data sirkulasi terlebih dahulu.")
 
         filename = secure_filename(file.filename)
         unique_id = str(uuid.uuid4())[:8]
@@ -99,33 +99,35 @@ def index():
             top_titles_df = engine.top_titles(df, 10)
             top_members_df = engine.top_members(df, 10)
             communities = engine.detect_communities(G_books)
+            insights = engine.generate_library_insights(df, m_books, m_members)
 
             book_graph_file = f"book_graph_{unique_id}.png"
             member_graph_file = f"member_graph_{unique_id}.png"
 
-            draw_graph_to_file(G_books, os.path.join(GRAPH_FOLDER, book_graph_file), "Graf Buku–Buku")
-            draw_graph_to_file(G_members, os.path.join(GRAPH_FOLDER, member_graph_file), "Graf Anggota–Anggota")
+            draw_graph_to_file(G_books, os.path.join(GRAPH_FOLDER, book_graph_file), "Peta Keterkaitan Koleksi")
+            draw_graph_to_file(G_members, os.path.join(GRAPH_FOLDER, member_graph_file), "Peta Kesamaan Minat Baca Anggota")
 
-            excel_path = os.path.join(OUTPUT_FOLDER, f"hasil_analisis_{unique_id}.xlsx")
+            excel_path = os.path.join(OUTPUT_FOLDER, f"laporan_libnis_mam_{unique_id}.xlsx")
             engine.export_excel(excel_path, {
-                "DataTerfilter": df,
-                "RankingBuku": m_books,
-                "RankingAnggota": m_members,
-                "KelompokAktif": kelompok_df,
-                "TrenBulanan": monthly_df,
-                "TopJudul": top_titles_df,
-                "TopAnggota": top_members_df
+                "DataSirkulasiTersaring": df,
+                "KoleksiPrioritas": m_books,
+                "AnggotaRagamBacaan": m_members,
+                "KelompokPenggunaAktif": kelompok_df,
+                "TrenSirkulasiBulanan": monthly_df,
+                "JudulSeringDipinjam": top_titles_df,
+                "AnggotaPalingAktif": top_members_df
             })
 
-            gexf_books = os.path.join(OUTPUT_FOLDER, f"graf_buku_{unique_id}.gexf")
-            gexf_members = os.path.join(OUTPUT_FOLDER, f"graf_anggota_{unique_id}.gexf")
+            gexf_books = os.path.join(OUTPUT_FOLDER, f"visualisasi_koleksi_{unique_id}.gexf")
+            gexf_members = os.path.join(OUTPUT_FOLDER, f"visualisasi_anggota_{unique_id}.gexf")
             engine.export_gexf(G_books, gexf_books)
             engine.export_gexf(G_members, gexf_members)
 
             return render_template(
                 "index.html",
-                success="Analisis berhasil.",
+                success="Analisis layanan perpustakaan berhasil ditampilkan.",
                 summary=summary,
+                insights=insights,
                 book_table=m_books.head(15).to_html(classes="table table-striped", index=False),
                 member_table=m_members.head(15).to_html(classes="table table-striped", index=False),
                 kelompok_table=kelompok_df.to_html(classes="table table-striped", index=False),
@@ -141,7 +143,7 @@ def index():
             )
 
         except Exception as e:
-            return render_template("index.html", error=f"Gagal memproses data: {e}")
+            return render_template("index.html", error=f"Data tidak dapat diproses: {e}")
 
     return render_template("index.html")
 
@@ -154,7 +156,5 @@ def download_file(filename):
     return redirect(url_for("index"))
 
 
-#if __name__ == "__main__":
- #   app.run(debug=True)
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
