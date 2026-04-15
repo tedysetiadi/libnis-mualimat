@@ -1,15 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 13 13:41:01 2026
-
-@author: tedysetiadi
-"""
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>LibNis Mu'allimat</title>
+    <title>LIBNIS MAM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -110,6 +103,15 @@ Created on Mon Apr 13 13:41:01 2026
             font-size: 14px;
         }
 
+        .sidebar-footer {
+            margin-top: 28px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
         .main {
             flex: 1;
             padding: 28px;
@@ -148,6 +150,7 @@ Created on Mon Apr 13 13:41:01 2026
             border-radius: 999px;
             font-size: 12px;
             font-weight: 600;
+            text-align: center;
         }
 
         .alert-success, .alert-danger {
@@ -328,6 +331,14 @@ Created on Mon Apr 13 13:41:01 2026
             margin-top: 10px;
         }
 
+        .site-footer {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
         @media (max-width: 1100px) {
             .filter-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -374,7 +385,7 @@ Created on Mon Apr 13 13:41:01 2026
         <div class="brand">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Mu'allimat">
             <div>
-                <h2>LibNis</h2>
+                <h2>LIBNIS MAM</h2>
                 <p>Mu'allimat Yogyakarta</p>
             </div>
         </div>
@@ -382,32 +393,41 @@ Created on Mon Apr 13 13:41:01 2026
         <div class="sidebar-section">
             <h4>Fungsi Sistem</h4>
             <ul>
-                <li>Analisis pola peminjaman</li>
-                <li>Graf buku dan anggota</li>
-                <li>Community detection</li>
-                <li>Rekap kelompok aktif</li>
-                <li>Ekspor hasil analisis</li>
+                <li>Ringkasan sirkulasi</li>
+                <li>Peta keterkaitan koleksi</li>
+                <li>Peta minat baca anggota</li>
+                <li>Kelompok minat baca</li>
+                <li>Laporan pengembangan koleksi</li>
             </ul>
         </div>
 
         <div class="sidebar-section">
-            <h4>Nilai Guna</h4>
+            <h4>Manfaat bagi Perpustakaan</h4>
             <ul>
-                <li>Prioritas pengadaan buku</li>
-                <li>Pemetaan minat baca</li>
-                <li>Dukungan keputusan pustakawan</li>
-                <li>Dokumentasi TTG berbasis web</li>
+                <li>Membantu evaluasi koleksi</li>
+                <li>Membaca kecenderungan minat baca</li>
+                <li>Menentukan prioritas pengadaan</li>
+                <li>Mendukung layanan berbasis data</li>
+                <li>Menyediakan laporan untuk pengambilan keputusan</li>
             </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <strong>LIBNIS MAM</strong><br>
+            Sistem Analisis Layanan dan Koleksi Perpustakaan<br><br>
+            Dikembangkan oleh:<br>
+            <strong>Tedy Setiadi</strong><br>
+            Universitas Ahmad Dahlan
         </div>
     </aside>
 
     <main class="main">
         <section class="topbar">
             <div>
-                <h1>Dashboard Analisis Jejaring Perpustakaan</h1>
-                <p>Madrasah Mu'allimat Muhammadiyah Yogyakarta</p>
+                <h1>Dashboard Layanan dan Pengembangan Koleksi Perpustakaan</h1>
+                <p>Perpustakaan Madrasah Mu'allimat Muhammadiyah Yogyakarta</p>
             </div>
-            <div class="badge">Teknologi Tepat Guna • Web Dashboard</div>
+            <div class="badge">Teknologi Tepat Guna • Analisis Sirkulasi dan Minat Baca</div>
         </section>
 
         {% if success %}
@@ -419,26 +439,26 @@ Created on Mon Apr 13 13:41:01 2026
         {% endif %}
 
         <section class="card">
-            <h2>Upload Data dan Filter Analisis</h2>
+            <h2>Unggah Data Sirkulasi dan Atur Penyaringan</h2>
             <form method="POST" enctype="multipart/form-data">
                 <div class="filter-grid">
                     <div class="field">
-                        <label>File Excel Peminjaman</label>
+                        <label>File Excel data sirkulasi</label>
                         <input type="file" name="file" accept=".xls,.xlsx" required>
                     </div>
 
                     <div class="field">
-                        <label>Tanggal mulai</label>
+                        <label>Periode awal</label>
                         <input type="date" name="start_date">
                     </div>
 
                     <div class="field">
-                        <label>Tanggal akhir</label>
+                        <label>Periode akhir</label>
                         <input type="date" name="end_date">
                     </div>
 
                     <div class="field">
-                        <label>Kelompok anggota</label>
+                        <label>Kelompok pengguna</label>
                         <select name="kelompok">
                             <option value="Semua">Semua</option>
                             <option value="MA">MA</option>
@@ -449,7 +469,7 @@ Created on Mon Apr 13 13:41:01 2026
                     </div>
 
                     <div class="field">
-                        <label>Status peminjaman</label>
+                        <label>Status sirkulasi</label>
                         <select name="status">
                             <option value="Semua">Semua</option>
                             <option value="Dipinjam">Dipinjam</option>
@@ -460,112 +480,129 @@ Created on Mon Apr 13 13:41:01 2026
                 </div>
 
                 <div style="margin-top:18px;">
-                    <button class="btn" type="submit">Proses Analisis</button>
+                    <button class="btn" type="submit">Tampilkan Analisis</button>
                 </div>
             </form>
         </section>
 
         {% if summary %}
         <section class="card">
-            <h2>Ringkasan Statistik</h2>
+            <h2>Ringkasan Statistik Layanan</h2>
             <div class="kpi-grid">
                 <div class="kpi-card">
-                    <div class="kpi-label">Total transaksi</div>
+                    <div class="kpi-label">Jumlah transaksi sirkulasi</div>
                     <div class="kpi-value">{{ summary.total_transaksi }}</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Total judul unik</div>
+                    <div class="kpi-label">Jumlah judul koleksi terpinjam</div>
                     <div class="kpi-value">{{ summary.total_judul }}</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Total anggota unik</div>
+                    <div class="kpi-label">Jumlah anggota peminjam</div>
                     <div class="kpi-value">{{ summary.total_anggota }}</div>
                 </div>
             </div>
         </section>
-
         <section class="card">
-            <h2>Unduh Hasil Analisis</h2>
+            <h2>Unduh Hasil Analisis dan Laporan</h2>
             <div class="download-group">
-                <a class="download-link" href="{{ url_for('download_file', filename=excel_file) }}">Download Excel</a>
-                <a class="download-link" href="{{ url_for('download_file', filename=gexf_books) }}">Download GEXF Buku</a>
-                <a class="download-link" href="{{ url_for('download_file', filename=gexf_members) }}">Download GEXF Anggota</a>
+                <a class="download-link" href="{{ url_for('download_file', filename=excel_file) }}">Unduh Laporan Excel</a>
+                <a class="download-link" href="{{ url_for('download_file', filename=gexf_books) }}">Unduh Data Visualisasi Koleksi</a>
+                <a class="download-link" href="{{ url_for('download_file', filename=gexf_members) }}">Unduh Data Visualisasi Anggota</a>
             </div>
             <div class="footer-note">
-                File GEXF dapat dibuka di Gephi untuk visualisasi lanjutan.
+                File visualisasi dapat dibuka pada Gephi untuk analisis lanjutan.
             </div>
         </section>
 
         <section class="card">
-            <h2>Visualisasi Graf</h2>
+            <h2>Visualisasi Keterkaitan Koleksi dan Minat Baca</h2>
             <div class="two-col">
                 <div class="graph-box">
-                    <h3>Graf Buku</h3>
-                    <img src="{{ url_for('static', filename='graphs/' + book_graph) }}" alt="Graf Buku">
+                    <h3>Peta Keterkaitan Koleksi</h3>
+                    <img src="{{ url_for('static', filename='graphs/' + book_graph) }}" alt="Peta Keterkaitan Koleksi">
                 </div>
                 <div class="graph-box">
-                    <h3>Graf Anggota</h3>
-                    <img src="{{ url_for('static', filename='graphs/' + member_graph) }}" alt="Graf Anggota">
+                    <h3>Peta Kesamaan Minat Baca Anggota</h3>
+                    <img src="{{ url_for('static', filename='graphs/' + member_graph) }}" alt="Peta Kesamaan Minat Baca Anggota">
                 </div>
             </div>
         </section>
 
         <section class="card">
-            <h2>Top Buku Prioritas</h2>
+            <h2>Koleksi Prioritas untuk Pengembangan</h2>
             <div class="table-wrap">
                 {{ book_table|safe }}
             </div>
         </section>
 
         <section class="card">
-            <h2>Top Anggota Penghubung Minat</h2>
+            <h2>Anggota dengan Ragam Bacaan Tinggi</h2>
             <div class="table-wrap">
                 {{ member_table|safe }}
             </div>
         </section>
 
         <section class="card">
-            <h2>Kelompok Anggota Aktif</h2>
+            <h2>Kelompok Pengguna Paling Aktif</h2>
             <div class="table-wrap">
                 {{ kelompok_table|safe }}
             </div>
         </section>
 
         <section class="card">
-            <h2>Tren Bulanan Peminjaman</h2>
+            <h2>Tren Sirkulasi Bulanan</h2>
             <div class="table-wrap">
                 {{ monthly_table|safe }}
             </div>
         </section>
 
         <section class="card">
-            <h2>Top Judul yang Paling Sering Dipinjam</h2>
+            <h2>Judul dengan Frekuensi Peminjaman Tertinggi</h2>
             <div class="table-wrap">
                 {{ top_titles_table|safe }}
             </div>
         </section>
 
         <section class="card">
-            <h2>Top Anggota Paling Aktif</h2>
+            <h2>Anggota Paling Aktif Meminjam</h2>
             <div class="table-wrap">
                 {{ top_members_table|safe }}
             </div>
         </section>
 
         <section class="card">
-            <h2>Community Detection Graf Buku</h2>
+            <h2>Kelompok Minat Baca Berdasarkan Pola Peminjaman</h2>
             {% if communities %}
                 {% for c in communities %}
                 <div class="community">
-                    <strong>Community {{ c.Community }}</strong><br>
-                    Jumlah node: {{ c.JumlahNode }}<br>
-                    Contoh anggota: {{ c.ContohAnggota }}
+                    <strong>Kelompok Minat Baca {{ c.Community }}</strong><br>
+                    Jumlah unsur: {{ c.JumlahNode }}<br>
+                    Contoh koleksi atau anggota: {{ c.ContohAnggota }}
                 </div>
                 {% endfor %}
             {% else %}
-                <p>Belum ada komunitas yang terbentuk.</p>
+                <p>Belum terbentuk kelompok minat baca dari data yang dianalisis.</p>
             {% endif %}
         </section>
+        <section class="card">
+            <h2>Catatan Ringkas untuk Pustakawan</h2>
+            {% if insights %}
+                <ul style="margin:0; padding-left:18px; line-height:1.8;">
+                    {% for item in insights %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Catatan analisis belum tersedia.</p>
+            {% endif %}
+        </section>
+        <div class="site-footer">
+            © 2026 Tedy Setiadi<br>
+            <strong>LIBNIS MAM</strong> — Sistem Analisis Layanan dan Koleksi Perpustakaan<br>
+            Universitas Ahmad Dahlan<br>
+            Pengembangan dari LIBNIS (Library Network Intelligence System)<br>
+        </div>
         {% endif %}
     </main>
 </div>
